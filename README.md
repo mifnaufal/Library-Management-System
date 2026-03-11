@@ -119,16 +119,21 @@ Jangan pakai kredensial shared ini untuk production publik.
 ### Steps
 1. Push repo ke GitHub/GitLab
 2. Vercel → New Project → import repo
-3. Set Environment Variables:
+3. Build & Output Settings (kalau Vercel minta diisi):
+   - Build Command: `npm run vercel-build`
+   - Output Directory: *(kosongkan)*
+   - Install Command: `npm install` *(atau kosongkan biar default)*
+4. Set Environment Variables:
    - `SUPABASE_URL`
    - `SUPABASE_ANON_KEY`
    - `COOKIE_SECRET` (random panjang)
    - (optional) `SUPABASE_SERVICE_ROLE_KEY`
-4. Deploy
+5. Deploy
 
 Catatan:
 - Express handler serverless: `api/index.js`
 - Routing: `vercel.json`
+- Kalau dapat 500 di Vercel, cek `GET /healthz` untuk memastikan env sudah terbaca.
 
 ---
 

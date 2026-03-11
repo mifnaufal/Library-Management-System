@@ -1,5 +1,12 @@
 <section class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
   <h1 class="text-xl font-semibold text-slate-900">500</h1>
   <p class="mt-1 text-sm text-slate-600">Something went wrong.</p>
+  <% if (typeof requestId === "string" && requestId) { %>
+    <p class="mt-4 text-xs text-slate-500">request_id: <span class="font-mono"><%= requestId %></span></p>
+  <% } %>
+  <p class="mt-4 text-xs text-slate-500">
+    Kalau ini terjadi di Vercel, cek <span class="font-mono">/healthz</span> dan pastikan env
+    <span class="font-mono">SUPABASE_URL</span>, <span class="font-mono">SUPABASE_ANON_KEY</span>, dan
+    <span class="font-mono">COOKIE_SECRET</span> sudah di-set.
+  </p>
 </section>
-

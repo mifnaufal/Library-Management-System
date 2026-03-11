@@ -38,12 +38,26 @@ app.set("layout", "layout");
 
 app.use(express.static(path.join(__dirname, "public")));
 
+app.get("/healthz", (req, res) => {
+  res.json({
+    ok: true,
+    node: process.version,
+    env: process.env.NODE_ENV || "unknown",
+    hasSupabase: Boolean(process.env.SUPABASE_URL && process.env.SUPABASE_ANON_KEY),
+    hasCookieSecret: Boolean(process.env.COOKIE_SECRET),
+    hasServiceRoleKey: Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY)
+  });
+});
+
 app.use("/", webRoutes);
 app.use("/api", apiRoutes);
 
 app.use((req, res) => {
   if (req.path.startsWith("/api/")) return res.status(404).json({ error: "Not found" });
-  return res.status(404).render("pages/not-found", { title: "Not Found" });
+  return res.status(404).render("pages/not-found", { title: "Not Found" }, (err, html) => {
+    if (err) return res.status(404).send("Not found");
+    return res.status(404).send(html);
+  });
 });
 
 // eslint-disable-next-line no-unused-vars
@@ -67,7 +81,20 @@ app.use((err, req, res, next) => {
     }
     return res.status(500).json({ error: "Server error", request_id: requestId });
   }
-  return res.status(500).render("pages/error", { title: "Error" });
+  return res.status(500).render("pages/error", { title: "Error", requestId }, (renderErr, html) => {
+    if (renderErr) {
+      console.error("[LMS] Failed to render error page", {
+        requestId,
+        name: renderErr?.name,
+        message: renderErr?.message
+      });
+      return res
+        .status(500)
+        .type("text")
+        .send(`Internal Server Error${requestId ? ` (request_id: ${requestId})` : ""}`);
+    }
+    return res.status(500).send(html);
+  });
 });
 
 module.exports = app;
