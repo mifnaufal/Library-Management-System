@@ -20,14 +20,6 @@ router.get("/register", (req, res) => {
   res.render("pages/register", { title: "Register", error: null });
 });
 
-function ensureSupabaseConfiguredPage(res) {
-  if (!process.env.SUPABASE_URL || !process.env.SUPABASE_ANON_KEY) {
-    res.status(500).render("pages/error", { title: "Error" });
-    return false;
-  }
-  return true;
-}
-
 function setAuthCookiesFromSession(res, session) {
   const accessToken = session?.access_token;
   const refreshToken = session?.refresh_token;
@@ -57,7 +49,7 @@ const registerSchema = z.object({
 
 router.post("/register", async (req, res, next) => {
   try {
-    if (!ensureSupabaseConfiguredPage(res)) return;
+    if (!supabaseAnon) return next(new Error("Supabase is not configured (missing SUPABASE_URL/SUPABASE_ANON_KEY)."));
     const parsed = registerSchema.parse(req.body);
     const fullName = parsed.full_name && parsed.full_name.trim() ? parsed.full_name.trim() : undefined;
 
@@ -85,7 +77,7 @@ const loginSchema = z.object({
 
 router.post("/login", async (req, res, next) => {
   try {
-    if (!ensureSupabaseConfiguredPage(res)) return;
+    if (!supabaseAnon) return next(new Error("Supabase is not configured (missing SUPABASE_URL/SUPABASE_ANON_KEY)."));
     const { email, password, next: nextParam } = loginSchema.parse(req.body);
     const { data, error } = await supabaseAnon.auth.signInWithPassword({ email, password });
     if (error) {

@@ -65,23 +65,48 @@ app.use((err, req, res, next) => {
   const requestId = req.id || null;
   const isApi = req.path.startsWith("/api/");
   const isDev = process.env.NODE_ENV !== "production";
+  const showErrorDetails = isDev || process.env.SHOW_ERROR_DETAILS === "1";
+
+  const originalErr = err;
+  const normalizedErr = (() => {
+    if (err instanceof Error) return err;
+    if (typeof err === "string") return new Error(err);
+    if (err && typeof err === "object") {
+      const message =
+        (typeof err.message === "string" && err.message) ||
+        (typeof err.error_description === "string" && err.error_description) ||
+        (typeof err.error === "string" && err.error) ||
+        "Unknown error";
+      const e = new Error(message);
+      e.name = (typeof err.name === "string" && err.name) || "NonErrorThrown";
+      e.details = err;
+      return e;
+    }
+    return new Error("Unknown error");
+  })();
 
   console.error("[LMS] Unhandled error", {
     requestId,
     path: req.path,
     method: req.method,
-    name: err?.name,
-    message: err?.message,
-    stack: isDev ? err?.stack : undefined
+    name: normalizedErr?.name,
+    message: normalizedErr?.message,
+    details: normalizedErr?.details,
+    stack: showErrorDetails ? normalizedErr?.stack : undefined
   });
 
   if (isApi) {
-    if (err?.name === "ZodError") {
-      return res.status(400).json({ error: "Invalid input", request_id: requestId, issues: err.issues });
+    if (originalErr?.name === "ZodError") {
+      return res
+        .status(400)
+        .json({ error: "Invalid input", request_id: requestId, issues: originalErr.issues, message: originalErr.message });
     }
     return res.status(500).json({ error: "Server error", request_id: requestId });
   }
-  return res.status(500).render("pages/error", { title: "Error", requestId }, (renderErr, html) => {
+  return res.status(500).render(
+    "pages/error",
+    { title: "Error", requestId, message: showErrorDetails ? normalizedErr?.message : null },
+    (renderErr, html) => {
     if (renderErr) {
       console.error("[LMS] Failed to render error page", {
         requestId,
@@ -94,7 +119,8 @@ app.use((err, req, res, next) => {
         .send(`Internal Server Error${requestId ? ` (request_id: ${requestId})` : ""}`);
     }
     return res.status(500).send(html);
-  });
+    }
+  );
 });
 
 module.exports = app;

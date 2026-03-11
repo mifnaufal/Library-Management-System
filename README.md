@@ -224,6 +224,11 @@ RPC (Postgres functions):
 ### Port conflict (EADDRINUSE)
 Set `PORT=3001` di `.env` atau jalankan `PORT=3001 npm run dev`.
 
+### Vercel 500 (Internal Server Error)
+- Cek `GET /healthz` → pastikan `hasSupabase: true`
+- Pastikan env Vercel ter-set di scope yang benar (Preview + Production)
+- Untuk debugging sementara, set env `SHOW_ERROR_DETAILS=1` lalu redeploy (jangan aktifkan untuk production publik beneran)
+
 ### Admin tidak muncul
 Pastikan row `public.users.role` = `admin` untuk email kamu:
 ```sql

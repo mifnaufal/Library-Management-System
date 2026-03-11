@@ -1,6 +1,12 @@
 <section class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
   <h1 class="text-xl font-semibold text-slate-900">500</h1>
   <p class="mt-1 text-sm text-slate-600">Something went wrong.</p>
+  <% if (typeof message === "string" && message) { %>
+    <p class="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900">
+      <span class="font-semibold">Detail:</span>
+      <span class="font-mono break-all"><%= message %></span>
+    </p>
+  <% } %>
   <% if (typeof requestId === "string" && requestId) { %>
     <p class="mt-4 text-xs text-slate-500">request_id: <span class="font-mono"><%= requestId %></span></p>
   <% } %>
