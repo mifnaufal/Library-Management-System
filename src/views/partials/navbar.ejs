@@ -1,0 +1,110 @@
+<header class="border-b border-slate-200 bg-white/80 backdrop-blur">
+  <nav class="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
+    <a href="/" class="flex items-center gap-2">
+      <span class="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-navy-900 text-white">
+        <span class="text-sm font-semibold">LMS</span>
+      </span>
+      <span class="text-sm font-semibold tracking-tight text-slate-900">Library Management System</span>
+    </a>
+
+    <button
+      id="nav-toggle"
+      type="button"
+      aria-expanded="false"
+      class="inline-flex items-center rounded-lg border border-slate-200 bg-white px-3 py-2 text-slate-700 shadow-sm hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-navy-900 sm:hidden"
+    >
+      <span class="sr-only">Open menu</span>
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+        <path
+          fill-rule="evenodd"
+          d="M3 5h14a1 1 0 010 2H3a1 1 0 010-2zm0 4h14a1 1 0 010 2H3a1 1 0 010-2zm0 4h14a1 1 0 010 2H3a1 1 0 010-2z"
+          clip-rule="evenodd"
+        />
+      </svg>
+    </button>
+
+    <div id="nav-menu" class="hidden w-full pt-4 sm:block sm:w-auto sm:pt-0">
+      <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
+        <a
+          href="/"
+          class="rounded-lg px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 hover:text-slate-900"
+        >
+          Catalog
+        </a>
+
+        <% if (locals.currentUser && locals.currentRole === "member") { %>
+          <a
+            href="/member/dashboard"
+            class="rounded-lg px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 hover:text-slate-900"
+          >
+            My Loans
+          </a>
+        <% } %>
+
+        <% if (locals.currentUser && locals.currentRole === "admin") { %>
+          <a
+            href="/admin/dashboard"
+            class="rounded-lg px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 hover:text-slate-900"
+          >
+            Dashboard
+          </a>
+          <a
+            href="/admin/books"
+            class="rounded-lg px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 hover:text-slate-900"
+          >
+            Books
+          </a>
+          <a
+            href="/admin/categories"
+            class="rounded-lg px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 hover:text-slate-900"
+          >
+            Categories
+          </a>
+          <a
+            href="/admin/transactions"
+            class="rounded-lg px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 hover:text-slate-900"
+          >
+            Transactions
+          </a>
+        <% } %>
+
+        <div class="h-px w-full bg-slate-200 sm:h-6 sm:w-px"></div>
+
+        <% if (locals.currentUser) { %>
+          <div class="flex items-center justify-between gap-3 rounded-lg bg-slate-50 px-3 py-2">
+            <span class="truncate text-xs text-slate-600">
+              <%= locals.currentUser.email || locals.currentUser.id %>
+            </span>
+            <% if (locals.currentRole) { %>
+              <span class="rounded-full bg-navy-900/10 px-2 py-0.5 text-[11px] font-semibold text-navy-900">
+                <%= locals.currentRole %>
+              </span>
+            <% } %>
+          </div>
+          <form action="/logout" method="post">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+            <button
+              type="submit"
+              class="inline-flex w-full items-center justify-center rounded-lg bg-navy-900 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-navy-800 focus:outline-none focus:ring-2 focus:ring-navy-900 focus:ring-offset-2 sm:w-auto"
+            >
+              Logout
+            </button>
+          </form>
+        <% } else { %>
+          <a
+            href="/register"
+            class="rounded-lg px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 hover:text-slate-900"
+          >
+            Register
+          </a>
+          <a
+            href="/login"
+            class="inline-flex w-full items-center justify-center rounded-lg bg-navy-900 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-navy-800 focus:outline-none focus:ring-2 focus:ring-navy-900 focus:ring-offset-2 sm:w-auto"
+          >
+            Login
+          </a>
+        <% } %>
+      </div>
+    </div>
+  </nav>
+</header>

@@ -1,0 +1,135 @@
+<section class="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
+  <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+    <div>
+      <h1 class="text-2xl font-semibold tracking-tight text-slate-900">Catalog</h1>
+      <p class="mt-1 text-sm text-slate-600">Cari buku berdasarkan judul, penulis, atau ISBN.</p>
+      <p class="mt-1 text-xs text-slate-500"><%= total %> buku ditemukan.</p>
+    </div>
+
+    <form class="grid w-full gap-4 sm:grid-cols-3 lg:w-auto" action="/" method="get">
+      <input
+        name="q"
+        value="<%= q %>"
+        placeholder="Search title / author / ISBN..."
+        class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm focus:border-navy-900 focus:outline-none focus:ring-2 focus:ring-navy-900/20 sm:w-80"
+      />
+      <select
+        name="category_id"
+        class="w-full rounded-xl border border-slate-200 bg-white px-3 py-3 text-sm shadow-sm focus:border-navy-900 focus:outline-none focus:ring-2 focus:ring-navy-900/20"
+      >
+        <option value="">All categories</option>
+        <% (categories || []).forEach((c) => { %>
+          <option value="<%= c.id %>" <%= String(category_id) === String(c.id) ? "selected" : "" %>><%= c.name %></option>
+        <% }) %>
+      </select>
+      <button
+        type="submit"
+        class="rounded-xl bg-navy-900 px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-navy-800"
+      >
+        Search
+      </button>
+    </form>
+  </div>
+
+  <div class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+    <% if (!books || books.length === 0) { %>
+      <div class="sm:col-span-2 lg:col-span-3">
+        <div class="rounded-2xl border border-slate-200 bg-slate-50 p-8 text-sm leading-relaxed text-slate-700">
+          Tidak ada buku yang cocok dengan pencarianmu.
+        </div>
+      </div>
+    <% } %>
+
+    <% (books || []).forEach((b) => { %>
+      <article class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <h3 class="text-base font-semibold leading-snug text-slate-900"><%= b.title %></h3>
+            <p class="mt-1 text-sm text-slate-600"><%= b.author %></p>
+          </div>
+          <% if (b.stock_available > 0) { %>
+            <span class="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
+              Available · <%= b.stock_available %>
+            </span>
+          <% } else { %>
+            <span class="rounded-full bg-rose-50 px-3 py-1 text-xs font-semibold text-rose-700">Out of stock</span>
+          <% } %>
+        </div>
+
+        <dl class="mt-4 space-y-2 text-xs text-slate-600">
+          <div class="flex items-center justify-between gap-3">
+            <dt class="font-medium text-slate-500">ISBN</dt>
+            <dd class="truncate text-slate-700"><%= b.isbn %></dd>
+          </div>
+          <div class="flex items-center justify-between gap-3">
+            <dt class="font-medium text-slate-500">Category</dt>
+            <dd class="truncate text-slate-700"><%= (b.categories && b.categories.name) ? b.categories.name : "—" %></dd>
+          </div>
+        </dl>
+
+        <div class="mt-6 flex items-center justify-between gap-2">
+          <% if (locals.currentUser && locals.currentRole === "member") { %>
+            <% if (b.stock_available > 0) { %>
+              <form class="w-full" action="/member/checkout" method="post">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                <input type="hidden" name="book_id" value="<%= b.id %>" />
+                <button
+                  type="submit"
+                  class="inline-flex w-full items-center justify-center rounded-xl bg-navy-900 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-navy-800 focus:outline-none focus:ring-2 focus:ring-navy-900 focus:ring-offset-2"
+                >
+                  Checkout (14 days)
+                </button>
+              </form>
+            <% } else { %>
+              <button
+                type="button"
+                disabled
+                class="inline-flex w-full items-center justify-center rounded-xl bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-400"
+              >
+                Unavailable
+              </button>
+            <% } %>
+          <% } else if (!locals.currentUser) { %>
+            <a
+              href="/login?next=<%= encodeURIComponent('/') %>"
+              class="inline-flex w-full items-center justify-center rounded-xl bg-navy-900 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-navy-800"
+            >
+              Login to borrow
+            </a>
+          <% } %>
+
+          <% if (locals.currentUser && locals.currentRole === "admin") { %>
+            <a
+              href="/admin/books/<%= b.id %>/edit"
+              class="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50"
+            >
+              Edit
+            </a>
+          <% } %>
+        </div>
+      </article>
+    <% }) %>
+  </div>
+
+  <div class="mt-10 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <p class="text-sm text-slate-600">Page <span class="font-semibold text-slate-900"><%= page %></span> of <%= totalPages %></p>
+    <div class="flex items-center gap-2">
+      <% if (page > 1) { %>
+        <a
+          href="/?q=<%= encodeURIComponent(q || '') %>&category_id=<%= encodeURIComponent(category_id || '') %>&page=<%= page - 1 %>"
+          class="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50"
+        >
+          Prev
+        </a>
+      <% } %>
+      <% if (page < totalPages) { %>
+        <a
+          href="/?q=<%= encodeURIComponent(q || '') %>&category_id=<%= encodeURIComponent(category_id || '') %>&page=<%= page + 1 %>"
+          class="rounded-xl bg-navy-900 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-navy-800"
+        >
+          Next
+        </a>
+      <% } %>
+    </div>
+  </div>
+</section>

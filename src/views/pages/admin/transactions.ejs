@@ -1,0 +1,47 @@
+<% const fmt = (d) => d ? new Date(d).toLocaleString("id-ID", { dateStyle: "medium", timeStyle: "short" }) : "—"; %>
+
+<section class="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
+  <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+    <div>
+      <h1 class="text-2xl font-semibold tracking-tight text-slate-900">Transactions</h1>
+      <p class="mt-1 text-sm text-slate-600">Monitor peminjaman, pengembalian, dan denda.</p>
+    </div>
+  </div>
+
+  <div class="mt-8 overflow-hidden rounded-2xl border border-slate-200">
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-sm">
+        <thead class="bg-slate-50 text-xs uppercase tracking-wider text-slate-500">
+          <tr>
+            <th class="px-6 py-3">Book</th>
+            <th class="px-6 py-3">Member</th>
+            <th class="px-6 py-3">Checked out</th>
+            <th class="px-6 py-3">Due</th>
+            <th class="px-6 py-3">Returned</th>
+            <th class="px-6 py-3 text-right">Fine</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-200 bg-white">
+          <% if (!transactions || transactions.length === 0) { %>
+            <tr>
+              <td class="px-6 py-5 text-slate-600" colspan="6">Belum ada transaksi.</td>
+            </tr>
+          <% } %>
+          <% (transactions || []).forEach((t) => { %>
+            <tr>
+              <td class="px-6 py-5">
+                <p class="font-semibold text-slate-900"><%= t.books?.title || `Book #${t.book_id}` %></p>
+                <p class="text-xs text-slate-600"><%= t.books?.author || "" %></p>
+              </td>
+              <td class="px-6 py-5 text-slate-700"><%= t.users?.email || t.member_id %></td>
+              <td class="px-6 py-5 text-slate-700"><%= fmt(t.checked_out_at) %></td>
+              <td class="px-6 py-5 text-slate-700"><%= fmt(t.due_at) %></td>
+              <td class="px-6 py-5 text-slate-700"><%= fmt(t.checked_in_at) %></td>
+              <td class="px-6 py-5 text-right font-semibold text-slate-900"><%= Number(t.fine_amount || 0).toFixed(2) %></td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>

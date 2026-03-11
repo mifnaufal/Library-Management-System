@@ -1,0 +1,126 @@
+<% const fmt = (d) => d ? new Date(d).toLocaleString("id-ID", { dateStyle: "medium", timeStyle: "short" }) : "—"; %>
+<% const now = new Date(); %>
+
+<section class="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
+  <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+    <div>
+      <h1 class="text-2xl font-semibold tracking-tight text-slate-900">My Loans</h1>
+      <p class="mt-1 text-sm text-slate-600">Kelola peminjaman aktif dan lihat riwayat.</p>
+    </div>
+    <a
+      href="/"
+      class="inline-flex items-center justify-center rounded-xl bg-navy-900 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-navy-800"
+    >
+      Borrow more
+    </a>
+  </div>
+
+  <% if (error) { %>
+    <p class="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700"><%= error %></p>
+  <% } %>
+
+  <div class="mt-8 grid gap-6 sm:grid-cols-3">
+    <div class="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+      <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Active</p>
+      <p class="mt-1 text-2xl font-semibold text-slate-900"><%= (active || []).length %></p>
+    </div>
+    <div class="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+      <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Overdue</p>
+      <p class="mt-1 text-2xl font-semibold text-slate-900">
+        <%= (active || []).filter(t => t.due_at && new Date(t.due_at) < now).length %>
+      </p>
+    </div>
+    <div class="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+      <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">History</p>
+      <p class="mt-1 text-2xl font-semibold text-slate-900"><%= (history || []).length %></p>
+    </div>
+  </div>
+
+  <div class="mt-10 overflow-hidden rounded-2xl border border-slate-200">
+    <div class="bg-slate-50 px-4 py-3 text-xs font-semibold uppercase tracking-wider text-slate-600">Active Loans</div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-sm">
+        <thead class="bg-white text-xs uppercase tracking-wider text-slate-500">
+          <tr>
+            <th class="px-6 py-3">Book</th>
+            <th class="px-6 py-3">Checked out</th>
+            <th class="px-6 py-3">Due</th>
+            <th class="px-6 py-3">Status</th>
+            <th class="px-6 py-3 text-right">Action</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-200 bg-white">
+          <% if (!active || active.length === 0) { %>
+            <tr>
+              <td class="px-6 py-5 text-slate-600" colspan="5">Belum ada peminjaman aktif.</td>
+            </tr>
+          <% } %>
+          <% (active || []).forEach((t) => { %>
+            <% const overdue = t.due_at && new Date(t.due_at) < now; %>
+            <tr>
+              <td class="px-6 py-5">
+                <p class="font-semibold text-slate-900"><%= t.books?.title || `Book #${t.book_id}` %></p>
+                <p class="text-xs text-slate-600"><%= t.books?.author || "" %></p>
+              </td>
+              <td class="px-6 py-5 text-slate-700"><%= fmt(t.checked_out_at) %></td>
+              <td class="px-6 py-5 text-slate-700"><%= fmt(t.due_at) %></td>
+              <td class="px-6 py-5">
+                <% if (overdue) { %>
+                  <span class="rounded-full bg-rose-50 px-3 py-1 text-xs font-semibold text-rose-700">Overdue</span>
+                <% } else { %>
+                  <span class="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">On track</span>
+                <% } %>
+              </td>
+              <td class="px-6 py-5 text-right">
+                <form action="/member/checkin" method="post" class="inline">
+                  <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                  <input type="hidden" name="transaction_id" value="<%= t.id %>" />
+                  <button
+                    type="submit"
+                    class="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50"
+                  >
+                    Check-in
+                  </button>
+                </form>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="mt-10 overflow-hidden rounded-2xl border border-slate-200">
+    <div class="bg-slate-50 px-4 py-3 text-xs font-semibold uppercase tracking-wider text-slate-600">History</div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-sm">
+        <thead class="bg-white text-xs uppercase tracking-wider text-slate-500">
+          <tr>
+            <th class="px-6 py-3">Book</th>
+            <th class="px-6 py-3">Checked out</th>
+            <th class="px-6 py-3">Returned</th>
+            <th class="px-6 py-3 text-right">Fine</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-200 bg-white">
+          <% if (!history || history.length === 0) { %>
+            <tr>
+              <td class="px-6 py-5 text-slate-600" colspan="4">Belum ada histori.</td>
+            </tr>
+          <% } %>
+          <% (history || []).forEach((t) => { %>
+            <tr>
+              <td class="px-6 py-5">
+                <p class="font-semibold text-slate-900"><%= t.books?.title || `Book #${t.book_id}` %></p>
+                <p class="text-xs text-slate-600"><%= t.books?.author || "" %></p>
+              </td>
+              <td class="px-6 py-5 text-slate-700"><%= fmt(t.checked_out_at) %></td>
+              <td class="px-6 py-5 text-slate-700"><%= fmt(t.checked_in_at) %></td>
+              <td class="px-6 py-5 text-right font-semibold text-slate-900"><%= Number(t.fine_amount || 0).toFixed(2) %></td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>

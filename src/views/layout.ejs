@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= title ? `${title} · LMS` : "LMS" %></title>
+    <link rel="stylesheet" href="/css/app.css" />
+  </head>
+  <body class="min-h-screen bg-slate-50 text-slate-900 antialiased">
+    <%- include("partials/navbar") %>
+
+    <main class="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
+      <%- body %>
+    </main>
+
+    <script>
+      (function () {
+        const btn = document.getElementById("nav-toggle");
+        const menu = document.getElementById("nav-menu");
+        if (!btn || !menu) return;
+        btn.addEventListener("click", function () {
+          const expanded = btn.getAttribute("aria-expanded") === "true";
+          btn.setAttribute("aria-expanded", String(!expanded));
+          menu.classList.toggle("hidden");
+        });
+      })();
+    </script>
+  </body>
+</html>
+
